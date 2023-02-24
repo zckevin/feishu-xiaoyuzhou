@@ -1,5 +1,5 @@
 const { XiaoyuzhoufmUrlSource } = require("./xiaoyuzhoufm");
-const { getFileBitRate } = require("../test-helpers");
+const { getFileBitRate } = require("./test-helpers");
 
 const validEpisodeUrl = "https://www.xiaoyuzhoufm.com/episode/636a2f842da3e3939dd9eddc";
 const invalidEpisodeUrl = "https://www.xiaoyuzhoufm.com/episode/aaaaava"

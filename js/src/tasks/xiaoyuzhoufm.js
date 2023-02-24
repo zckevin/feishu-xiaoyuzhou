@@ -1,6 +1,6 @@
 const path = require("path")
 const axios = require("axios");
-const { FFmpegAudioDownloader } = require("../ffmpeg-audio-downloader");
+const { FFmpegAudioDownloader } = require("./ffmpeg-audio-downloader");
 
 const FAKE_USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36";

@@ -12,13 +12,13 @@ async function run(srcUrl) {
 }
 
 test('valid local file', async () => {
-  const sourceFile = path.join(__dirname, `../static/${inputFileName}`);
+  const sourceFile = path.join(__dirname, `../../static/${inputFileName}`);
   await expect(run(sourceFile)).resolves.toBe();
   await expect(getFileBitRate(outputFile)).resolves.toBe(targetAudioBitrate);
 });
 
 test('valid http file', async () => {
-  await startServer(path.join(__dirname, "../static"), 4000);
+  await startServer(path.join(__dirname, "../../static/"), 4000);
   await expect(run(`http://localhost:4000/${inputFileName}`)).resolves.toBe();
   await expect(getFileBitRate(outputFile)).resolves.toBe(targetAudioBitrate);
   await stopServer();
