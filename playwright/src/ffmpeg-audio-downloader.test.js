@@ -1,27 +1,14 @@
 const path = require('path');
-const ffmpeg = require('fluent-ffmpeg');
-const { FmpegAudioDownloader, FFmpegAudioDownloader } = require("./ffmpeg-audio-downloader");
-const { startServer, stopServer } = require("./fastify-static-http-server");
+const { FFmpegAudioDownloader } = require("./ffmpeg-audio-downloader");
+const { startServer, stopServer, getFileBitRate } = require("./test-helpers");
 
 const inputFileName = "file_example_MP3_700KB.mp3";
 const outputFile = `/tmp/${inputFileName}.mp3`;
 const targetAudioBitrate = 96000;
 
 async function run(srcUrl) {
-  const downloader = new FFmpegAudioDownloader(srcUrl, outputFile, targetAudioBitrate);
+  const downloader = new FFmpegAudioDownloader(srcUrl, outputFile, "96k");
   await downloader.Run();
-}
-
-async function getFileBitRate(filePath) {
-  return new Promise((resolve, reject) => {
-    ffmpeg.ffprobe(filePath, function (err, metadata) {
-      if (err) {
-        return reject(err);
-      }
-      // console.log(metadata);
-      resolve(metadata.streams[0].bit_rate);
-    });
-  })
 }
 
 test('valid local file', async () => {

@@ -34,7 +34,7 @@ class FFmpegAudioDownloader {
   }
 
   async Run() {
-    return this.runFFmpeg(this.srcUrl, this.dstPath);
+    return this.runFFmpeg(this.srcUrl, this.dstPath, this.targetAudioBitrate);
   }
 }
 

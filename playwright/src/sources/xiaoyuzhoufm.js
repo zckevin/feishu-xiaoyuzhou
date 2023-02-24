@@ -1,4 +1,6 @@
-const axios = require('axios');
+const path = require("path")
+const axios = require("axios");
+const { FFmpegAudioDownloader } = require("../ffmpeg-audio-downloader");
 
 const FAKE_USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36";
@@ -6,13 +8,13 @@ const FAKE_USER_AGENT =
 class XiaoyuzhoufmUrlSource {
   constructor(sourceUrl) {
     this.sourceUrl = sourceUrl;
-    this.regex = /meta property="og:audio" content="(.+?)"/;
+    this.regex = /<title>(.+?)<\/title>.+<meta property="og:audio" content="(.+?)"/;
   }
 
   async getResourceFileUrl() {
     const response = await axios.request({
       url: this.sourceUrl,
-      method: "get",
+      method: "GET",
       responseType: 'document',
       headers: {
         "User-Agent": FAKE_USER_AGENT,
@@ -22,8 +24,20 @@ class XiaoyuzhoufmUrlSource {
     if (!result) {
       throw new Error("Xiaoyuzhou: no resource found in response.");
     }
-    const [_, resourceFileUrl] = result;
-    return resourceFileUrl;
+    const [_, title, resourceFileUrl] = result;
+    return { title, resourceFileUrl };
+  }
+
+  async Download(downloadDir, targetBitrate = "96k") {
+    const { resourceFileUrl, title } = await this.getResourceFileUrl();
+    const extname = path.extname(new URL(resourceFileUrl).pathname);
+    if (!/\..+/.test(extname)) {
+      throw new Error(`Xiaoyuzhou: invalid extname found in url ${resourceFileUrl}`)
+    }
+    const outputFilePath = path.join(downloadDir, `${title}${extname}`);
+    const downloader = new FFmpegAudioDownloader(resourceFileUrl, outputFilePath, targetBitrate);
+    await downloader.Run();
+    return outputFilePath;
   }
 }
 
