@@ -8,7 +8,8 @@ const FAKE_USER_AGENT =
 class XiaoyuzhoufmUrlSource {
   constructor(sourceUrl) {
     this.sourceUrl = sourceUrl;
-    this.regex = /<title>(.+?)<\/title>.+<meta property="og:audio" content="(.+?)"/;
+    // global / multiline / dot matches newline
+    this.regex = /<title>(.+?)<\/title>.+<meta property="og:audio" content="(.+?)"/gms;
   }
 
   async getResourceFileUrl() {
@@ -22,6 +23,7 @@ class XiaoyuzhoufmUrlSource {
     });
     const result = this.regex.exec(response.data);
     if (!result) {
+      console.log(response.data);
       throw new Error("Xiaoyuzhou: no resource found in response.");
     }
     const [_, title, resourceFileUrl] = result;
