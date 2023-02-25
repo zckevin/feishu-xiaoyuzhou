@@ -1,4 +1,4 @@
-import { BrowserContext, Page } from "playwright-core";
+import { BrowserContext, Page } from "playwright";
 import { ServerStream } from "../grpc/server";
 
 // 5 minutes
