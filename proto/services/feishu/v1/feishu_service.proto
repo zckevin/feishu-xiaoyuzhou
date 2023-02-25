@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package services.feishu.v1;
+
+option go_package = "github.com/zckevin/feishu-xiaoyuzhou/proto/services/feishu/v1";
+
+service FeishuTaskService {
+  rpc CreateTask(TaskConfig) returns (stream TaskStatusMsgStream) {}
+}
+
+enum TaskType {
+  Dummy = 0;
+  Xiaoyuzhou = 1;
+}
+
+message TaskConfig {
+  string task_id = 1;
+  TaskType task_type = 2;
+  string url = 3;
+}
+
+message TaskStatusMsgStream {
+  string msg = 1;
+}

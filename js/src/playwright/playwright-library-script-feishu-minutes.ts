@@ -1,7 +1,15 @@
+import { BrowserContext, Page } from "playwright-core";
+import { ServerStream } from "../grpc/server";
+
 // 5 minutes
 const DEFAULT_UPLOAD_TIMEOUT = 5 * 60 * 1000;
 
-async function doUploadFile(page, filePath, timeout) {
+async function doUploadFile(
+  serverStream: ServerStream,
+  page: Page, 
+  filePath: string, 
+  timeout: number,
+) {
   await page.getByRole('button', { name: 'Upload' }).click();
   await page.getByText('Upload local files').click();
 
@@ -12,10 +20,21 @@ async function doUploadFile(page, filePath, timeout) {
   await fileChooser.setFiles(filePath);
 
   await page.getByRole('button', { name: 'Submit' }).click();
+  serverStream.write("Playwright: upload start");
+  const startTime = new Date();
+
   await page.getByText('Upload completed', { exact: true }).waitFor({ timeout });
+  const duration = (new Date().getTime() - startTime.getTime()) / 1000;
+  serverStream.write(`Playwright: upload done, took ${duration}s`);
 }
 
-async function uploadFile(context, homePageUrl, filePath, timeout = DEFAULT_UPLOAD_TIMEOUT) {
+export async function uploadFile(
+  serverStream: ServerStream,
+  context: BrowserContext,
+  homePageUrl: string,
+  filePath: string,
+  timeout: number = DEFAULT_UPLOAD_TIMEOUT
+) {
   const page = await context.newPage();
   await page.goto(homePageUrl);
 
@@ -25,12 +44,10 @@ async function uploadFile(context, homePageUrl, filePath, timeout = DEFAULT_UPLO
   ]);
 
   if (logined) {
-    return await doUploadFile(page, filePath, timeout);
+    serverStream.write("Playwright: is logined")
+    return await doUploadFile(serverStream, page, filePath, timeout);
   } else {
-    console.log("wait for login")
+    // TODO: login
+    serverStream.write("Playwright: no login info")
   }
-}
-
-module.exports = {
-  uploadFile,
 }
