@@ -111,7 +111,7 @@ func main() {
 	// 启动 http 服务
 	fmt.Println("http server started", "http://localhost:9090/webhook/event")
 
-	err := http.ListenAndServe(":9090", nil)
+	err := http.ListenAndServe("localhost:9090", nil)
 	if err != nil {
 		panic(err)
 	}

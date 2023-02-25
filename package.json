@@ -6,8 +6,8 @@
   "scripts": {
     "buf:build": "cd proto; buf build; cd ..",
     "buf:generate": "cd proto; buf generate; cd ..",
-    "evans": "./evans --proto proto/services/feishu/v1/feishu_service.proto repl --port 4000",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "bin:evans": "./bin/evans --proto proto/services/feishu/v1/feishu_service.proto repl --port 4000",
+    "bin:cpolar": "./bin/cpolar http 9090"
   },
   "author": "",
   "license": "ISC",
