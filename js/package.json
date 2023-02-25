@@ -1,10 +1,11 @@
 {
-  "name": "playwright",
+  "name": "feishu-xiaoyuzhou",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start:server": "nodemon src/grpc/server.ts --watch src/grpc",
+    "start:server": "nodemon src/grpc/server.ts",
+    "build:docker": "docker build -t zckevin/feishu-xiaoyuzhou -f ./Dockerfile .",
     "test": "jest"
   },
   "keywords": [],
