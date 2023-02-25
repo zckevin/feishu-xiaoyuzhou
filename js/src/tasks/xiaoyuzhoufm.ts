@@ -4,7 +4,6 @@ import { ServerStream } from "../grpc/server";
 import { TaskConfig  } from '../proto/services/feishu/v1/feishu_service_pb';
 import { FFmpegAudioDownloader } from "./ffmpeg-audio-downloader";
 import { FeishuMinutesUploader } from "../playwright/feishu-minutes-uploader";
-import { RateLimitter } from "./rate-limitter";
 const axios = require("axios");
 
 const FAKE_USER_AGENT =
@@ -48,18 +47,17 @@ class XiaoyuzhoufmUrlSource {
   }
 }
 
-const limitter = new RateLimitter();
 
 export async function HandleXiaoyuzhouTask(
   call: grpc.ServerUnaryCall<TaskConfig, any>,
   serverStream: ServerStream
 ) {
   const url = call.request.getUrl();
-  const success = limitter.AddKey(url);
-  if (!success) {
-    console.log("duplicate task key", url);
-    return;
-  }
+  // const success = limitter.AddKey(url);
+  // if (!success) {
+  //   console.log("duplicate task key", url);
+  //   return;
+  // }
 
   const src = new XiaoyuzhoufmUrlSource(serverStream);
   const outputFilePath = await src.Download(url, "/tmp");

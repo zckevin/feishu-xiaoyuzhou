@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 
@@ -19,7 +20,8 @@ import (
 )
 
 var (
-	client *lark.Client
+	client         *lark.Client
+	msgRateLimiter *RateLimitter = NewRateLimitter(time.Minute)
 )
 
 func init() {
@@ -88,9 +90,12 @@ func main() {
 			if err != nil {
 				return err
 			}
-
 			sess := &ChatSession{
 				chatID: *event.Event.Message.ChatId,
+			}
+			added := msgRateLimiter.AddKey(contentStr, time.Minute)
+			if !added {
+				return fmt.Errorf("duplicate content in 1 min: %s", contentStr)
 			}
 			err = CreateTask(sess, contentStr)
 			if err != nil {
@@ -104,9 +109,9 @@ func main() {
 		httpserverext.NewEventHandlerFunc(handler, larkevent.WithLogLevel(larkcore.LogLevelInfo)))
 
 	// 启动 http 服务
-	fmt.Println("http server started", "http://localhost:8080/webhook/event")
+	fmt.Println("http server started", "http://localhost:9090/webhook/event")
 
-	err := http.ListenAndServe(":8080", nil)
+	err := http.ListenAndServe(":9090", nil)
 	if err != nil {
 		panic(err)
 	}

@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"log"
 	"os"
+	"regexp"
 	"time"
 
 	pb "zckevin/feishu-xiaoyuzhou/proto/services/feishu/v1"
@@ -15,8 +17,9 @@ import (
 )
 
 var (
-	TASK_DEADLINE = time.Minute * 15
-	GRPC_SERVER   string
+	GRPC_SERVER        string
+	TASK_DEADLINE      = time.Minute * 15
+	xiaoyuzhoufm_regex = regexp.MustCompile(`^https:\/\/www\.xiaoyuzhoufm\.com\/episode\/.*`)
 )
 
 func init() {
@@ -26,19 +29,30 @@ func init() {
 	}
 }
 
-func CreateTask(sess *ChatSession, contentString string) error {
+func CreateTask(sess *ChatSession, contentString string) (err error) {
+	defer func() {
+		if err != nil {
+			sess.SendMsg(err.Error())
+		}
+	}()
+
 	log.Println("<=", contentString)
-	taskConfig := pb.TaskConfig{
-		TaskId:   shortid.MustGenerate(),
-		TaskType: pb.TaskType_Xiaoyuzhou,
-		Url:      contentString,
+	if !xiaoyuzhoufm_regex.MatchString(contentString) {
+		return fmt.Errorf("unsupported command")
 	}
+
 	conn, err := grpc.Dial(GRPC_SERVER, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return err
 	}
 	defer conn.Close()
 	client := pb.NewFeishuTaskServiceClient(conn)
+
+	taskConfig := pb.TaskConfig{
+		TaskId:   shortid.MustGenerate(),
+		TaskType: pb.TaskType_Xiaoyuzhou,
+		Url:      contentString,
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), TASK_DEADLINE)
 	defer cancel()
 	stream, err := client.CreateTask(ctx, &taskConfig)
