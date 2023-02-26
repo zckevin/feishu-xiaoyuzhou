@@ -40,7 +40,8 @@ class XiaoyuzhoufmUrlSource {
     if (!/\..+/.test(extname)) {
       throw new Error(`Xiaoyuzhou: invalid extname found in url ${resourceFileUrl}`)
     }
-    const outputFilePath = path.join(downloadDir, `${title}${extname}`);
+    // escape path seperators
+    const outputFilePath = path.join(downloadDir, `${title.replace("/", "_")}${extname}`);
     const downloader = new FFmpegAudioDownloader(this.serverStream, resourceFileUrl, outputFilePath, targetBitrate);
     await downloader.Run();
     return outputFilePath;
