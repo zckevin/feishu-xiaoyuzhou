@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -20,8 +21,7 @@ import (
 )
 
 var (
-	client         *lark.Client
-	msgRateLimiter *RateLimitter = NewRateLimitter(time.Minute)
+	client *lark.Client
 )
 
 func init() {
@@ -78,6 +78,19 @@ func parseContent(content string) (string, error) {
 	return contentMap["text"].(string), nil
 }
 
+func parseTimestampMillisecondString(s string) (time.Time, error) {
+	num, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		return time.Time{}, err
+	}
+	return time.UnixMilli(num), nil
+}
+
+func isStaleEvent(eventCreateTime time.Time) bool {
+	duration := time.Since(eventCreateTime)
+	return duration > time.Second*3
+}
+
 func main() {
 	client = lark.NewClient(os.Getenv("APP_ID"), os.Getenv("APP_SECRET"))
 
@@ -85,6 +98,15 @@ func main() {
 	handler := dispatcher.NewEventDispatcher(os.Getenv("APP_VERIFICATION_TOKEN"), os.Getenv("APP_ENCRYPT_KEY")).
 		OnP2MessageReceiveV1(func(ctx context.Context, event *larkim.P2MessageReceiveV1) error {
 			// fmt.Println(larkcore.Prettify(event))
+			eventCreateTime, err := parseTimestampMillisecondString(*event.Event.Message.CreateTime)
+			if err != nil {
+				return err
+			}
+			// fmt.Printf("@%s %v\n", *event.Event.Message.MessageId, eventCreateTime)
+			if isStaleEvent(eventCreateTime) {
+				return fmt.Errorf("stale event for %v", time.Since(eventCreateTime))
+			}
+
 			content := event.Event.Message.Content
 			contentStr, err := parseContent(*content)
 			if err != nil {
@@ -92,10 +114,6 @@ func main() {
 			}
 			sess := &ChatSession{
 				chatID: *event.Event.Message.ChatId,
-			}
-			added := msgRateLimiter.AddKey(contentStr, time.Minute)
-			if !added {
-				return fmt.Errorf("duplicate content in 1 min: %s", contentStr)
 			}
 			err = CreateTask(sess, contentStr)
 			if err != nil {

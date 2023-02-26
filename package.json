@@ -6,6 +6,7 @@
   "scripts": {
     "buf:build": "cd proto; buf build; cd ..",
     "buf:generate": "cd proto; buf generate; cd ..",
+    "golang:publish": "sh ./golang-publish.sh",
     "bin:evans": "./bin/evans --proto proto/services/feishu/v1/feishu_service.proto repl --port 4000",
     "bin:cpolar": "./bin/cpolar http 9090"
   },
