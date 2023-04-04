@@ -22,13 +22,13 @@ export class FeishuMinutesUploader {
     serverStream.write("playwright: cleaned");
   }
 
-  async UploadFile(serverStream: ServerStream, isCreateingUserDir = false) {
+  async UploadFile(serverStream: ServerStream, isCreatingUserDir = false) {
     // const context = await createNormalContext();
     this.#context = await createPersistentContext(userDirPath, {
       headless: !this.isDebug,
     });
     await uploadFile(serverStream, this.#context, homePageUrl, this.filePath);
-    if (!isCreateingUserDir) {
+    if (!isCreatingUserDir) {
       await this.clean(serverStream);
     }
   }

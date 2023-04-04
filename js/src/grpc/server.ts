@@ -7,7 +7,11 @@ import { HandleXiaoyuzhouTask } from "../tasks/xiaoyuzhoufm";
 import { TaskType, TaskConfig, TaskStatusMsgStream } from '../proto/services/feishu/v1/feishu_service_pb';
 import { FeishuTaskServiceService, IFeishuTaskServiceServer } from '../proto/services/feishu/v1/feishu_service_grpc_pb';
 
-export class ServerStream {
+export interface ServerStream {
+  write(payload: string): void;
+}
+
+export class ServerStreamImpl {
   #call: ServerWritableStream<TaskConfig, TaskStatusMsgStream>;
   #taskID: string;
 
@@ -31,7 +35,7 @@ export default class TaskServer implements IFeishuTaskServiceServer {
 
   async createTask(call: ServerWritableStream<TaskConfig, TaskStatusMsgStream>) {
     try {
-      const serverStream = new ServerStream(call);
+      const serverStream = new ServerStreamImpl(call);
       const taskType = call.request.getTaskType();
       switch (taskType) {
         case TaskType.XIAOYUZHOU: {
@@ -49,10 +53,10 @@ export default class TaskServer implements IFeishuTaskServiceServer {
   }
 }
 
-const grcpServer = new Server();
-grcpServer.addService(FeishuTaskServiceService, new TaskServer);
+const grpcServer = new Server();
+grpcServer.addService(FeishuTaskServiceService, new TaskServer);
 
-grcpServer.bindAsync('0.0.0.0:4000', ServerCredentials.createInsecure(), () => {
-  grcpServer.start();
+grpcServer.bindAsync('0.0.0.0:4000', ServerCredentials.createInsecure(), () => {
+  grpcServer.start();
   console.log('server is running on 0.0.0.0:4000');
 });
