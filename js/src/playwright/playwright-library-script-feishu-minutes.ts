@@ -20,12 +20,12 @@ async function doUploadFile(
   await fileChooser.setFiles(filePath);
 
   await page.getByRole('button', { name: 'Submit' }).click();
-  serverStream.write("Playwright: upload start");
+  serverStream.write("playwright: upload start");
   const startTime = new Date();
 
   await page.getByText('Upload completed', { exact: true }).waitFor({ timeout });
   const duration = (new Date().getTime() - startTime.getTime()) / 1000;
-  serverStream.write(`Playwright: upload done, took ${duration}s`);
+  serverStream.write(`playwright: upload done, took ${duration}s`);
 }
 
 export async function uploadFile(
@@ -44,10 +44,10 @@ export async function uploadFile(
   ]);
 
   if (logined) {
-    serverStream.write("Playwright: is logined")
+    serverStream.write("playwright: is logined")
     return await doUploadFile(serverStream, page, filePath, timeout);
   } else {
     // TODO: login
-    serverStream.write("Playwright: no login info")
+    serverStream.write("playwright: no login info")
   }
 }
