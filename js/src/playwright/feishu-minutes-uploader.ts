@@ -1,5 +1,5 @@
 import { BrowserContext } from "playwright"
-import fs from 'fs-extra'
+import * as fs from 'fs-extra'
 import { ServerStream } from "../grpc/server";
 import { uploadFile } from "./playwright-library-script-feishu-minutes";
 import { createNormalContext, createPersistentContext } from "./launch-context";

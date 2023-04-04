@@ -1,5 +1,5 @@
 import * as path from "path";
-import grpc from '@grpc/grpc-js';
+import * as grpc from '@grpc/grpc-js';
 import { ServerStream } from "../grpc/server";
 import { TaskConfig  } from '../proto/services/feishu/v1/feishu_service_pb';
 import { FFmpegAudioDownloader } from "./ffmpeg-audio-downloader";

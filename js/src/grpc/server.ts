@@ -1,7 +1,8 @@
-import grpc, {
+import {
   Server,
   ServerWritableStream,
   ServerCredentials,
+  UntypedHandleCall,
 } from '@grpc/grpc-js';
 import { HandleXiaoyuzhouTask } from "../tasks/xiaoyuzhoufm";
 import { TaskType, TaskConfig, TaskStatusMsgStream } from '../proto/services/feishu/v1/feishu_service_pb';
@@ -31,7 +32,7 @@ export class ServerStreamImpl {
 }
 
 export default class TaskServer implements IFeishuTaskServiceServer {
-  [name: string]: grpc.UntypedHandleCall;
+  [name: string]: UntypedHandleCall;
 
   async createTask(call: ServerWritableStream<TaskConfig, TaskStatusMsgStream>) {
     try {
@@ -56,7 +57,8 @@ export default class TaskServer implements IFeishuTaskServiceServer {
 const grpcServer = new Server();
 grpcServer.addService(FeishuTaskServiceService, new TaskServer);
 
-grpcServer.bindAsync('0.0.0.0:4000', ServerCredentials.createInsecure(), () => {
+// TODO: use .env to store the host and port
+grpcServer.bindAsync('100.70.238.72:4000', ServerCredentials.createInsecure(), () => {
   grpcServer.start();
   console.log('server is running on 0.0.0.0:4000');
 });
