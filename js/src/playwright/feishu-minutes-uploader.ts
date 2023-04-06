@@ -25,6 +25,7 @@ export class FeishuMinutesUploader {
   async UploadFile(serverStream: ServerStream, isCreatingUserDir = false) {
     // const context = await createNormalContext();
     this.#context = await createPersistentContext(userDirPath, {
+      args: ['--remote-debugging-port=' + 9222],
       headless: !this.isDebug,
     });
     await uploadFile(serverStream, this.#context, homePageUrl, this.filePath);
