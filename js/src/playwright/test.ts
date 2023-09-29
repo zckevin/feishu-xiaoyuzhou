@@ -9,7 +9,7 @@ class TestServerStream {
 
 async function run() {
   const uploader = new FeishuMinutesUploader(
-    path.join(__dirname, "../../static/file_example_MP3_700KB.mp3"), true);
+    path.join(__dirname, "../../static/file_example_MP3_700KB.mp3"), false);
   await uploader.UploadFile(new TestServerStream(), true);
 }
 run();
