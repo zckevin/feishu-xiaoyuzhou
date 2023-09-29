@@ -16,6 +16,8 @@ export class FeishuMinutesUploader {
   ) { }
 
   private async clean(serverStream: ServerStream) {
+    await this.#context!.close();
+    await this.#context!.browser()?.close();
     fs.removeSync(this.filePath);
     serverStream.write("playwright: cleaned");
   }
@@ -23,14 +25,17 @@ export class FeishuMinutesUploader {
   async UploadFile(serverStream: ServerStream, isCreatingUserDir = false) {
     // const context = await createNormalContext();
     this.#context = await createPersistentContext(userDirPath, {
-      args: ['--remote-debugging-port=' + 9229],
+      args: [
+        '--remote-debugging-port=' + 9229,
+        "--js-flags='--jitless'",
+      ],
       headless: !this.isDebug,
     });
     await uploadFile(serverStream, this.#context, homePageUrl, this.filePath);
-    await this.#context!.close();
-    await this.#context!.browser()?.close();
     if (!isCreatingUserDir) {
       await this.clean(serverStream);
+    } else {
+      // wait for qrcode scan to login and save session info in chrome user dir
     }
   }
 };

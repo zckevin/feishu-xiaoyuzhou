@@ -58,7 +58,7 @@ const grpcServer = new Server();
 grpcServer.addService(FeishuTaskServiceService, new TaskServer);
 
 // TODO: use .env to store the host and port
-grpcServer.bindAsync('100.70.238.72:4000', ServerCredentials.createInsecure(), () => {
+grpcServer.bindAsync('localhost:4000', ServerCredentials.createInsecure(), () => {
   grpcServer.start();
-  console.log('server is running on 0.0.0.0:4000');
+  console.log('server is running on localhost:4000');
 });
