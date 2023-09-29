@@ -1,7 +1,7 @@
 const ffmpeg = require('fluent-ffmpeg');
 const fastify = require('fastify')({ logger: false });
 
-async function startServer(rootPath, port = 3000) {
+export async function startServer(rootPath, port = 3000) {
   fastify.register(require('@fastify/static'), {
     // root: path.join(__dirname, 'public'),
     root: rootPath,
@@ -9,11 +9,11 @@ async function startServer(rootPath, port = 3000) {
   return await fastify.listen({ port });
 }
 
-async function stopServer() {
+export async function stopServer() {
   return await fastify.close();
 }
 
-async function getFileBitRate(filePath) {
+export async function getFileBitRate(filePath) {
   return new Promise((resolve, reject) => {
     ffmpeg.ffprobe(filePath, function (err, metadata) {
       if (err) {
@@ -25,8 +25,6 @@ async function getFileBitRate(filePath) {
   })
 }
 
-module.exports = {
-  startServer,
-  stopServer,
-  getFileBitRate,
+export class DummyServerStream {
+  write(payload: string) {}
 }
