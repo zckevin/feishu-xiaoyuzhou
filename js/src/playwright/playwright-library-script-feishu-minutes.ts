@@ -1,8 +1,8 @@
 import { BrowserContext, Page, errors } from "playwright";
 import { ServerStream } from "../grpc/server";
 
-// 5 minutes
-const DEFAULT_UPLOAD_TIMEOUT = 5 * 60 * 1000;
+// 20 minutes
+const DEFAULT_UPLOAD_TIMEOUT = 20 * 60 * 1000;
 
 async function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -51,12 +51,14 @@ async function enableFileSharing(
   while (true) {
     try {
       await itemPage.getByRole('button', { name: 'Share' }).click({
-        timeout: 5000,
+        timeout: 1 * 60 * 1000
       });
     } catch (err) {
       if (err instanceof errors.TimeoutError) {
         serverStream.write("playwright: share button not found, refresh");
-        itemPage.reload();
+        itemPage.reload({
+          timeout: 2 * 60 * 1000,
+        });
         continue;
       } else {
         throw err;

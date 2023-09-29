@@ -13,6 +13,7 @@ export class FFmpegAudioDownloader {
     const serverStream = this.serverStream;
     let program = ffmpeg(srcUrl)
       .noVideo()
+      .audioCodec('copy')
       .output(dstPath)
       .on('start', function (commandLine: any) {
         serverStream.write(`ffmpeg args: ${JSON.stringify(commandLine)}`);

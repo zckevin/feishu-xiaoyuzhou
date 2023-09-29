@@ -27,7 +27,6 @@ export class FeishuMinutesUploader {
     this.#context = await createPersistentContext(userDirPath, {
       args: [
         '--remote-debugging-port=' + 9229,
-        "--js-flags='--jitless'",
       ],
       headless: !this.isDebug,
     });
