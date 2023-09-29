@@ -22,11 +22,13 @@ async function doUploadFile(
     page.locator('div.upload-modal-body > div').click(),
   ]);
   await fileChooser.setFiles(filePath);
-
+  // enable lang auto detect
+  page.locator('.detect-lang input').click(),
+  // submit
   await page.getByRole('button', { name: 'Submit' }).click();
-  serverStream.write("playwright: upload start");
-  const startTime = new Date();
 
+  const startTime = new Date();
+  serverStream.write("playwright: upload start");
   await page.getByText('Upload completed', { exact: true }).waitFor({ timeout });
   const duration = (new Date().getTime() - startTime.getTime()) / 1000;
   serverStream.write(`playwright: upload done, took ${duration}s`);
