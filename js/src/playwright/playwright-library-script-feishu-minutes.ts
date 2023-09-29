@@ -16,14 +16,14 @@ async function doUploadFile(
 ) {
   await page.getByRole('button', { name: 'Upload' }).click();
   await page.getByText('Upload local files').click();
+  // enable lang auto detect
+  await page.locator('.detect-lang input').check();
 
   const [fileChooser] = await Promise.all([
     page.waitForEvent('filechooser'),
     page.locator('div.upload-modal-body > div').click(),
   ]);
   await fileChooser.setFiles(filePath);
-  // enable lang auto detect
-  page.locator('.detect-lang input').click(),
   // submit
   await page.getByRole('button', { name: 'Submit' }).click();
 
