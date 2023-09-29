@@ -9,7 +9,7 @@ const axios = require("axios");
 const FAKE_USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36";
 
-class XiaoyuzhoufmUrlSource {
+export class XiaoyuzhoufmUrlSource {
   // global / multiline / dot matches newline
   readonly #regex = /<title>(.+?)<\/title>.+<meta property="og:audio" content="(.+?)"/gms;
 
@@ -26,15 +26,14 @@ class XiaoyuzhoufmUrlSource {
     });
     const result = this.#regex.exec(response.data);
     if (!result) {
-      console.log(response.data);
-      throw new Error("Xiaoyuzhou: no resource found in response.");
+      throw new Error(`Xiaoyuzhou: no resource found in response for url: ${sourceUrl}`);
     }
     const [_, title, resourceFileUrl] = result;
     this.serverStream.write(`title: ${title}, resource: ${resourceFileUrl}`);
     return { title, resourceFileUrl };
   }
 
-  async Download(sourceUrl: string, downloadDir: string, targetBitrate: string = "96k") {
+  async Download(sourceUrl: string, downloadDir: string, targetBitrate: string = "") {
     const { resourceFileUrl, title } = await this.getResourceFileUrl(sourceUrl);
     const extname = path.extname(new URL(resourceFileUrl).pathname);
     if (!/\..+/.test(extname)) {

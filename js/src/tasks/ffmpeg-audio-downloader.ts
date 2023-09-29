@@ -22,11 +22,10 @@ export class FFmpegAudioDownloader {
         serverStream.write(`ffmpeg codec: ${JSON.stringify(data)}`);
         // console.log("codec:", data);
       });
-    // Disable audio bitrate setting because it's slow.
-    //
-    // if (targetAudioBitrate) {
-    //   program = program.audioBitrate(targetAudioBitrate);
-    // }
+
+    if (targetAudioBitrate) {
+      program = program.audioBitrate(targetAudioBitrate);
+    }
     return new Promise((resolve, reject) => {
       program
         .on('error', function (err: any) {
