@@ -7,6 +7,8 @@ import {
 import { HandleXiaoyuzhouTask } from "../tasks/xiaoyuzhoufm";
 import { TaskType, TaskConfig, TaskStatusMsgStream } from '../proto/services/feishu/v1/feishu_service_pb';
 import { FeishuTaskServiceService, IFeishuTaskServiceServer } from '../proto/services/feishu/v1/feishu_service_grpc_pb';
+import * as fastq from "fastq";
+import type { queueAsPromised } from "fastq";
 
 export interface ServerStream {
   write(payload: string): void;
@@ -31,12 +33,38 @@ export class ServerStreamImpl {
   }
 }
 
+type Task = {
+  call: ServerWritableStream<TaskConfig, TaskStatusMsgStream>
+  serverStream: ServerStreamImpl
+}
+
+type TaskNotifier = {
+  serverStream: ServerStreamImpl
+}
+
 export default class TaskServer implements IFeishuTaskServiceServer {
   [name: string]: UntypedHandleCall;
 
+  #tasks: queueAsPromised<Task> = fastq.promise(this.#handleTask.bind(this), 1);
+  #taskNotifiers: Array<TaskNotifier> = [];
+
   async createTask(call: ServerWritableStream<TaskConfig, TaskStatusMsgStream>) {
+    const serverStream = new ServerStreamImpl(call);
+    const queueLength = this.#taskNotifiers.length;
+    if (queueLength >= 10) {
+      serverStream.write("Too many queues tasks, abort.");
+      return;
+    }
+    if (queueLength > 0) {
+      serverStream.write(`Wait for ${queueLength} queued tasks to finish.`);
+    }
+    this.#tasks.push({ call, serverStream })
+    this.#taskNotifiers.push({ serverStream })
+  }
+
+  async #handleTask(task: Task) {
+    const { call, serverStream } = task;
     try {
-      const serverStream = new ServerStreamImpl(call);
       const taskType = call.request.getTaskType();
       switch (taskType) {
         case TaskType.XIAOYUZHOU: {
@@ -47,10 +75,12 @@ export default class TaskServer implements IFeishuTaskServiceServer {
           throw new Error(`Unimplemented tasktype value: ${taskType}`)
         }
       }
-      call.end();
     } catch (err) {
+      serverStream.write(err);
       console.log(err);
     }
+    this.#taskNotifiers.shift();
+    call.end();
   }
 }
 

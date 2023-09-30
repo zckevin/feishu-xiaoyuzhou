@@ -43,7 +43,6 @@ async function enableFileSharing(
   page: Page,
   context: BrowserContext,
 ) {
-  const groupName = 'feishu-xiaoyuzhou';
   const firstItemHref = await page.locator('div.meeting-list-item-wrapper > a').first().getAttribute('href');
   if (!firstItemHref) {
     serverStream.write("playwright: error: no first item href found");
@@ -57,6 +56,7 @@ async function enableFileSharing(
       await itemPage.getByRole('button', { name: 'Share' }).click({
         timeout: 1 * 60 * 1000
       });
+      break;
     } catch (err) {
       if (err instanceof errors.TimeoutError) {
         serverStream.write("playwright: share button not found, refresh");
@@ -68,9 +68,10 @@ async function enableFileSharing(
         throw err;
       }
     }
-    break;
   }
-  await itemPage.locator("div.invite-member-name-entry input").type(groupName);
+
+  const groupName = 'feishu-xiaoyuzhou';
+  await itemPage.locator("div.invite-member-name-entry input").type(groupName, { delay: 100 });
   await itemPage.getByText(groupName).click();
   await itemPage.getByRole('button', { name: 'Send' }).click();
   serverStream.write("playwright: file sharing enabled");
