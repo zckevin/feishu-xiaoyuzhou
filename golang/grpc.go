@@ -1,15 +1,14 @@
-package main
+package feishu_xiaoyuzhou
 
 import (
 	"context"
 	"fmt"
 	"io"
 	"log"
-	"os"
 	"regexp"
 	"time"
 
-	pb "zckevin/feishu-xiaoyuzhou/proto/services/feishu/v1"
+	pb "github.com/buptsb/feishu-xiaoyuzhou/proto/services/feishu/v1"
 
 	"github.com/teris-io/shortid"
 	"google.golang.org/grpc"
@@ -17,19 +16,15 @@ import (
 )
 
 var (
-	GRPC_SERVER        string
 	TASK_DEADLINE      = time.Minute * 15
 	xiaoyuzhoufm_regex = regexp.MustCompile(`^https:\/\/www\.xiaoyuzhoufm\.com\/episode\/.*`)
 )
 
-func init() {
-	GRPC_SERVER = os.Getenv("GRPC_SERVER")
-	if GRPC_SERVER == "" {
-		log.Fatal("GRPC_SERVER missing in .env")
-	}
+type ISession interface {
+	SendMsg(payload string) error
 }
 
-func CreateTask(sess *ChatSession, contentString string) (err error) {
+func CreateTask(sess ISession, contentString, grpcServer string) (err error) {
 	defer func() {
 		if err != nil {
 			sess.SendMsg(err.Error())
@@ -41,7 +36,7 @@ func CreateTask(sess *ChatSession, contentString string) (err error) {
 		return fmt.Errorf("unsupported command")
 	}
 
-	conn, err := grpc.Dial(GRPC_SERVER, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(grpcServer, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return err
 	}

@@ -18,10 +18,12 @@ import (
 	larkevent "github.com/larksuite/oapi-sdk-go/v3/event"
 	"github.com/larksuite/oapi-sdk-go/v3/event/dispatcher"
 	larkim "github.com/larksuite/oapi-sdk-go/v3/service/im/v1"
+
+	feishu "github.com/buptsb/feishu-xiaoyuzhou"
 )
 
 var (
-	client *lark.Client
+	GRPC_SERVER string
 )
 
 func init() {
@@ -29,42 +31,10 @@ func init() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
-}
-
-type ChatSession struct {
-	chatID string
-}
-
-func jsonEscape(i string) string {
-	b, err := json.Marshal(i)
-	if err != nil {
-		panic(err)
+	GRPC_SERVER = os.Getenv("GRPC_SERVER")
+	if GRPC_SERVER == "" {
+		log.Fatal("GRPC_SERVER missing in .env")
 	}
-	s := string(b)
-	return s[1 : len(s)-1]
-}
-
-func (sess *ChatSession) SendMsg(payload string) error {
-	content := larkim.NewTextMsgBuilder().
-		Text(jsonEscape(payload)).
-		Build()
-	resp, err := client.Im.Message.Create(context.Background(), larkim.NewCreateMessageReqBuilder().
-		ReceiveIdType(larkim.ReceiveIdTypeChatId).
-		Body(larkim.NewCreateMessageReqBodyBuilder().
-			MsgType(larkim.MsgTypeText).
-			ReceiveId(sess.chatID).
-			Content(content).
-			Build()).
-		Build())
-	// 处理错误
-	if err != nil {
-		return err
-	}
-	// 服务端错误处理
-	if !resp.Success() {
-		return fmt.Errorf("code %d: %s", resp.Code, resp.Msg)
-	}
-	return nil
 }
 
 func parseContent(content string) (string, error) {
@@ -92,7 +62,7 @@ func isStaleEvent(eventCreateTime time.Time) bool {
 }
 
 func main() {
-	client = lark.NewClient(os.Getenv("APP_ID"), os.Getenv("APP_SECRET"))
+	feishu.LarkClient = lark.NewClient(os.Getenv("APP_ID"), os.Getenv("APP_SECRET"))
 
 	//// 注册消息处理器
 	handler := dispatcher.NewEventDispatcher(os.Getenv("APP_VERIFICATION_TOKEN"), os.Getenv("APP_ENCRYPT_KEY")).
@@ -112,10 +82,10 @@ func main() {
 			if err != nil {
 				return err
 			}
-			sess := &ChatSession{
-				chatID: *event.Event.Message.ChatId,
+			sess := &feishu.ChatSession{
+				ChatID: *event.Event.Message.ChatId,
 			}
-			err = CreateTask(sess, contentStr)
+			err = feishu.CreateTask(sess, contentStr, GRPC_SERVER)
 			if err != nil {
 				return err
 			}
@@ -129,7 +99,7 @@ func main() {
 	// 启动 http 服务
 	fmt.Println("http server started", "http://localhost:9090/webhook/event")
 
-	err := http.ListenAndServe("localhost:9090", nil)
+	err := http.ListenAndServe("localhost:9091", nil)
 	if err != nil {
 		panic(err)
 	}

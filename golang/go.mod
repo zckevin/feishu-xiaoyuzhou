@@ -1,4 +1,4 @@
-module zckevin/feishu-xiaoyuzhou
+module github.com/buptsb/feishu-xiaoyuzhou
 
 go 1.18
 

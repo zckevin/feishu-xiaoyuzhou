@@ -1,4 +1,4 @@
-package main
+package feishu_xiaoyuzhou
 
 import (
 	"sync"
