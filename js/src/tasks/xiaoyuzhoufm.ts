@@ -1,7 +1,7 @@
 import * as path from "path";
 import * as grpc from '@grpc/grpc-js';
 import { ServerStream } from "../grpc/server";
-import { TaskConfig  } from '../proto/services/feishu/v1/feishu_service_pb';
+import { TaskConfig } from '../proto/services/feishu/v1/feishu_service_pb';
 import { FFmpegAudioDownloader } from "./ffmpeg-audio-downloader";
 import { FeishuMinutesUploader } from "../playwright/feishu-minutes-uploader";
 const axios = require("axios");
@@ -64,9 +64,16 @@ export async function HandleXiaoyuzhouTask(
   //   return;
   // }
 
-  const src = new XiaoyuzhoufmUrlSource(serverStream);
-  const outputFilePath = await src.Download(url, "/tmp");
+  let uploader: FeishuMinutesUploader;
+  try {
+    const src = new XiaoyuzhoufmUrlSource(serverStream);
+    const outputFilePath = await src.Download(url, "/tmp");
 
-  const uploader = new FeishuMinutesUploader(outputFilePath);
-  await uploader.UploadFile(serverStream);
+    uploader = new FeishuMinutesUploader(outputFilePath);
+    await uploader.UploadFile(serverStream);
+  } catch (err) {
+    serverStream.write(err);
+    console.log(err);
+  }
+  await uploader.Close();
 }

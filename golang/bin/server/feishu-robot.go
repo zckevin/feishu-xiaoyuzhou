@@ -97,7 +97,7 @@ func main() {
 		httpserverext.NewEventHandlerFunc(handler, larkevent.WithLogLevel(larkcore.LogLevelInfo)))
 
 	// 启动 http 服务
-	fmt.Println("http server started", "http://localhost:9090/webhook/event")
+	fmt.Println("http server started", "http://localhost:9091/webhook/event")
 
 	err := http.ListenAndServe("localhost:9091", nil)
 	if err != nil {

@@ -16,10 +16,13 @@ export class FeishuMinutesUploader {
   ) { }
 
   private async clean(serverStream: ServerStream) {
-    await this.#context!.close();
-    await this.#context!.browser()?.close();
     fs.removeSync(this.filePath);
     serverStream.write("playwright: cleaned");
+  }
+
+  async Close() {
+    await this.#context!.close();
+    await this.#context!.browser()?.close();
   }
 
   async UploadFile(serverStream: ServerStream, isCreatingUserDir = false) {
