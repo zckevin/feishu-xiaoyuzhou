@@ -18,12 +18,16 @@ async function doUploadFile(
   await page.getByText('Upload local files').click();
   // enable lang auto detect
   await page.locator('.detect-lang input').check();
-
+  // select upload file
   const [fileChooser] = await Promise.all([
     page.waitForEvent('filechooser'),
     page.locator('div.upload-modal-body > div').click(),
   ]);
-  await fileChooser.setFiles(filePath);
+  serverStream.write("playwright: select upload file path: " + filePath);
+  // add timeout in case of upload timeout on VMs with small mem and large swap
+  await fileChooser.setFiles(filePath, {
+    timeout: 60 * 1000,
+  });
   // submit
   await page.getByRole('button', { name: 'Submit' }).click();
 
